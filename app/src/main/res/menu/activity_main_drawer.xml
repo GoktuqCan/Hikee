@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/nav_camara" android:icon="@android:drawable/ic_menu_camera"
+            android:title="Import" />
+        <item android:id="@+id/nav_gallery" android:icon="@android:drawable/ic_menu_mapmode"
+            android:title="Harita Etiketleme" />
+        <item android:id="@+id/nav_slideshow" android:icon="@android:drawable/ic_menu_slideshow"
+            android:title="Slideshow" />
+        <item android:id="@+id/nav_manage" android:icon="@android:drawable/ic_menu_view"
+            android:title="Canlı Harita" />
+    </group>
+
+    <item android:title="Kişisel">
+        <menu>
+            <item android:id="@+id/nav_share" android:icon="@android:drawable/ic_menu_preferences"
+                android:title="Ayarlar" />
+            <item android:id="@+id/nav_send" android:icon="@android:drawable/ic_menu_close_clear_cancel"
+                android:title="Çıkış" />
+        </menu>
+    </item>
+
+</menu>
