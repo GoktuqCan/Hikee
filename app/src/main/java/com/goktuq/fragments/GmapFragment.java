@@ -123,7 +123,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             androidHttpTransport.call(SOAP_ACTION, envelope);
             KvmSerializable ks = (KvmSerializable) envelope.bodyIn;
             for (int i = 0; i < ks.getPropertyCount(); i++) {
-                acc.add(ks.getProperty(i).toString());
+                acc.add(ks.getProperty(i).toString());//Dizi elemanı
             }
             return (ArrayList<String>) acc;
         } catch (Exception e) {
