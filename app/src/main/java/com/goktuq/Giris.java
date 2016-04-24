@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.view.View;
-import android.view.Window;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -29,7 +28,6 @@ public class Giris extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_giris);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
                 .permitAll().build();
@@ -45,6 +43,10 @@ public class Giris extends Activity {
             ogrNo.setText(donenogrNo);
             sifre.setText(donenSifre);
         }
+    }
+
+    public void kayitSayfasi(View v) {
+        startActivity(new Intent(Giris.this, UyeOl.class));
     }
 
     public void giris(View v) {

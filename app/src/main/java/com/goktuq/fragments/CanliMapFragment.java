@@ -41,6 +41,7 @@ public class CanliMapFragment extends Fragment implements OnMapReadyCallback{
     Timer timer;
     Handler handler;
     GoogleMap googleHarita;
+    int focusSayac = 0;
 
     final static long TIME = 3000;
 
@@ -76,6 +77,11 @@ public class CanliMapFragment extends Fragment implements OnMapReadyCallback{
     private void harita(){
         googleHarita.clear();
             if (googleHarita != null) {
+                if(focusSayac == 0 && googleHarita.getMyLocation() != null){
+                    googleHarita.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(googleHarita.getMyLocation().getLatitude(), googleHarita.getMyLocation().getLongitude()), 14.6f));
+                    focusSayac++;
+                }
                 for (String ss : getForMarkers()) {
                     String[] ayri = ss.split("lok");
                     Marker marker;
