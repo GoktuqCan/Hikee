@@ -21,7 +21,7 @@ import com.goktuq.youtubedemo.R;
  */
 public class AyarlarFragment extends Fragment {
 
-    Switch mySwitch;//aa
+    Switch mySwitch;
 
     @Nullable
     @Override
