@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 
 import com.goktuq.youtubedemo.R;
 
-
 public class MainFragment extends Fragment {
 
     @Nullable

@@ -94,7 +94,7 @@ public class UyeOl extends Activity {
         String METHOD_NAME = "uyeOl";// Method ad�
         String NAMESPACE = "http://controller";
         String SOAP_ACTION = "http://controller/uyeOl";
-        String URL = "http://gggaws-txbam3mqqn.elasticbeanstalk.com/services/DemoDagitik?wsdl";
+        String URL = "http://otostopaws.iv8wvcggmq.eu-central-1.elasticbeanstalk.com/services/DemoDagitik?wsdl";
         // SOAP must be the same version as the webservice.
         int SOAP_VERSION = SoapEnvelope.VER11;
         try {

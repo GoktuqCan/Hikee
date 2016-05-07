@@ -51,6 +51,11 @@ public class AyarlarFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+    }
+
     private boolean servisCalisiyorMu() {
         ActivityManager servisYoneticisi = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
 

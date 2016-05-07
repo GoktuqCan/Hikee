@@ -74,9 +74,9 @@ public class KonumServisi extends Service {
 
             @Override
             public void onLocationChanged(Location loc) {
-                if (isBetterLocation(loc, location1)) {
+                //if (isBetterLocation(loc, location1)) {
                     location1 = new Location(loc);
-                }
+                //}
             }
         };
         boolean gps_enabled = konumYoneticisi
@@ -182,7 +182,7 @@ public class KonumServisi extends Service {
         String METHOD_NAME = "lokasyonGuncelle";
         String NAMESPACE = "http://controller";
         String SOAP_ACTION = "http://controller/lokasyonGuncelle";
-        String URL = "http://gggaws-txbam3mqqn.elasticbeanstalk.com/services/DemoDagitik?wsdl";
+        String URL = "http://otostopaws.iv8wvcggmq.eu-central-1.elasticbeanstalk.com/services/DemoDagitik?wsdl";
         int SOAP_VERSION = SoapEnvelope.VER11;
         try {
             SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);

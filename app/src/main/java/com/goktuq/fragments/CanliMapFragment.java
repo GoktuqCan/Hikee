@@ -61,7 +61,6 @@ public class CanliMapFragment extends Fragment implements OnMapReadyCallback{
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
                 .permitAll().build();
         StrictMode.setThreadPolicy(policy);
-
         return view;
     }
 
@@ -78,8 +77,8 @@ public class CanliMapFragment extends Fragment implements OnMapReadyCallback{
         googleHarita.clear();
             if (googleHarita != null) {
                 if(focusSayac == 0 && googleHarita.getMyLocation() != null){
-                    googleHarita.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(googleHarita.getMyLocation().getLatitude(), googleHarita.getMyLocation().getLongitude()), 14.6f));
+                    googleHarita.moveCamera(CameraUpdateFactory.newLatLng(
+                            new LatLng(googleHarita.getMyLocation().getLatitude(), googleHarita.getMyLocation().getLongitude())));
                     focusSayac++;
                 }
                 for (String ss : getForMarkers()) {
@@ -168,12 +167,14 @@ public class CanliMapFragment extends Fragment implements OnMapReadyCallback{
 
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
-        FragmentManager fm = getActivity().getFragmentManager();
-        Fragment fragment = (fm.findFragmentById(R.id.map_canli));
-        FragmentTransaction ft = fm.beginTransaction();
-        ft.remove(fragment);
-        ft.commit();
+            super.onDestroyView();
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            FragmentManager fm = getActivity().getFragmentManager();
+            Fragment fragment = (fm.findFragmentById(R.id.map_canli));
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.remove(fragment);
+            ft.commit();
+        }
         timer.cancel();
     }
 }
