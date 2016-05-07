@@ -113,6 +113,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                     new LatLng(lat, longi), 14.6f));
             googleHarita.setMyLocationEnabled(true);
             googleHarita.getUiSettings().setMyLocationButtonEnabled(true);
+            googleHarita.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         }
     }
 

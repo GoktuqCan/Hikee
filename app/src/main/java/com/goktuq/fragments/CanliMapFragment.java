@@ -117,6 +117,7 @@ public class CanliMapFragment extends Fragment implements OnMapReadyCallback{
                 new LatLng(40.822861, 29.923878), 14.6f));// B kap�s�
         googleHarita.setMyLocationEnabled(true);
         googleHarita.getUiSettings().setMyLocationButtonEnabled(true);
+        googleHarita.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         timer = new Timer();
         handler = new Handler();
         timer.schedule(new TimerTask() {
