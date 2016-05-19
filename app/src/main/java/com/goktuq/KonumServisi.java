@@ -22,10 +22,13 @@ import android.widget.Toast;
 import com.goktuq.youtubedemo.R;
 
 import org.ksoap2.SoapEnvelope;
+import org.ksoap2.serialization.KvmSerializable;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -44,6 +47,9 @@ public class KonumServisi extends Service {
     Long onceki, sonraki;
     public static Long bildirimSure = (long) (10 * 1000);
     private static final int TWO_MINUTES = 1000 * 60 * 2;
+    private static final int TEN_MINUTES = 1000 * 60 * 10;
+
+    private long oncekiEtiketSure = 0;
 
     final static long TIME = 10000;
 
@@ -75,7 +81,7 @@ public class KonumServisi extends Service {
             @Override
             public void onLocationChanged(Location loc) {
                 //if (isBetterLocation(loc, location1)) {
-                    location1 = new Location(loc);
+                location1 = new Location(loc);
                 //}
             }
         };
@@ -119,11 +125,13 @@ public class KonumServisi extends Service {
         });
     }
 
-    /** Determines whether one Location reading is better than the current Location fix
-     * @param location  The new Location that you want to evaluate
-     * @param currentBestLocation  The current Location fix, to which you want to compare the new one
+    /**
+     * Determines whether one Location reading is better than the current Location fix
+     *
+     * @param location            The new Location that you want to evaluate
+     * @param currentBestLocation The current Location fix, to which you want to compare the new one
      */
-    protected boolean isBetterLocation(Location location,Location currentBestLocation) {
+    protected boolean isBetterLocation(Location location, Location currentBestLocation) {
         if (currentBestLocation == null) {
             // A new location is always better than no location
             return true;
@@ -170,7 +178,9 @@ public class KonumServisi extends Service {
         return false;
     }
 
-    /** Checks whether two providers are the same */
+    /**
+     * Checks whether two providers are the same
+     */
     private boolean isSameProvider(String provider1, String provider2) {
         if (provider1 == null) {
             return provider2 == null;
@@ -221,7 +231,10 @@ public class KonumServisi extends Service {
             sharedData = getSharedPreferences(filename, MODE_PRIVATE);
             kulId = sharedData.getString("kulId", "bulunamadi");
             String ID = sharedData.getString("kulId", "bulunamadi");
-
+            if ((System.currentTimeMillis() - oncekiEtiketSure) >= TEN_MINUTES) {
+                gunlukEtiket();
+                oncekiEtiketSure = System.currentTimeMillis();
+            }
             lokasyonGuncelle(ID, location1.getLatitude(),
                     location1.getLongitude());
             return null;
@@ -235,6 +248,71 @@ public class KonumServisi extends Service {
 
         public void onDismiss() {
             backgroundNetwork.this.cancel(true);
+        }
+    }
+
+    public void gunlukEtiket() {
+        String METHOD_NAME = "gunlukEtiket";// Method ad�
+        String NAMESPACE = "http://controller";
+        String SOAP_ACTION = "http://controller/gunlukEtiket";
+        String URL = "http://otostopaws.iv8wvcggmq.eu-central-1.elasticbeanstalk.com/services/DemoDagitik?wsdl";
+        // SOAP must be the same version as the webservice.
+        int SOAP_VERSION = SoapEnvelope.VER11;
+        List<String> acc = new ArrayList<String>();
+        try {
+            SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
+            request.addProperty("kulID", kulId);
+            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
+                    SOAP_VERSION);
+            envelope.dotNet = true;
+            envelope.setOutputSoapObject(request);
+            HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
+            androidHttpTransport.debug = true;
+            androidHttpTransport.call(SOAP_ACTION, envelope);
+            KvmSerializable ks = (KvmSerializable) envelope.bodyIn;
+            for (int i = 0; i < ks.getPropertyCount(); i++) {
+                if (ks.getProperty(i) != null)
+                    acc.add(ks.getProperty(i).toString());//Dizi elemanı
+            }
+            if (acc.size() > 0)
+                bildirimEtiket();
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(), e.getMessage().toString(),
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void bildirimEtiket() {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            NotificationManager mNotificationManager;
+            mNotificationManager = (NotificationManager) getApplicationContext()
+                    .getApplicationContext().getSystemService(
+                            Context.NOTIFICATION_SERVICE);
+            Intent intent = new Intent(getApplicationContext(),
+                    MainActivity.class);
+            PendingIntent pIntent = PendingIntent.getActivity(
+                    getApplicationContext(), 0, intent, 0);
+            Intent intentBilgi = new Intent(getApplicationContext(),
+                    MainActivity.class);
+            intentBilgi.putExtra("EtiketBildirim","Harita");
+            intentBilgi.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            PendingIntent pIntentBilgi = PendingIntent.getActivity(
+                    getApplicationContext(), 0, intentBilgi, PendingIntent.FLAG_UPDATE_CURRENT);
+            NotificationCompat.Builder nBuilder = new NotificationCompat.Builder(
+                    getApplicationContext())
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentTitle("Etiketlemeniz Gereken Yerler Var")
+                    .setContentText("Harita Üzerinde Görmek İçin Tıklayın")
+                    .setTicker("Kaldığınız yerleri etiketleyin")
+                    .setContentIntent(pIntent)
+                    .setAutoCancel(true)
+                    .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000})
+                    .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
+                    .setLights(Color.GREEN, 2000, 3000);
+            mNotificationManager.notify(1001, nBuilder.build());
+        } else {
+            Toast.makeText(getApplicationContext(),
+                    "You need a higher version", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -258,6 +336,8 @@ public class KonumServisi extends Service {
                         getApplicationContext(), 0, intent, 0);
                 Intent intentBilgi = new Intent(getApplicationContext(),
                         MainActivity.class);
+                intentBilgi.putExtra( "EtiketBildirim", "Harita");
+                intentBilgi.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 PendingIntent pIntentBilgi = PendingIntent.getActivity(
                         getApplicationContext(), 0, intentBilgi, 0);
                 NotificationCompat.Builder nBuilder = new NotificationCompat.Builder(
@@ -269,7 +349,7 @@ public class KonumServisi extends Service {
                         .addAction(R.mipmap.accepttwo, "Gönder", pIntentBilgi)
                         .addAction(R.mipmap.canceltwo, "Reddet", pIntent)
                         .setAutoCancel(true)
-                        .setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
+                        .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000})
                         .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                         .setLights(Color.GREEN, 2000, 3000);
                 mNotificationManager.notify(1001, nBuilder.build());

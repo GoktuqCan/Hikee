@@ -22,9 +22,8 @@ import android.widget.Toast;
 import com.goktuq.fragments.AyarlarFragment;
 import com.goktuq.fragments.CanliMapFragment;
 import com.goktuq.fragments.GmapFragment;
-import com.goktuq.fragments.ImportFragment;
-import com.goktuq.fragments.MainFragment;
 import com.goktuq.fragments.MekanlarListFragment;
+import com.goktuq.fragments.YakindakilerListFragment;
 import com.goktuq.youtubedemo.R;
 
 import org.ksoap2.SoapEnvelope;
@@ -58,11 +57,26 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        navigationView.setCheckedItem(R.id.nav_camara);
-        idOnceki = R.id.nav_camara;
 
-        FragmentManager fm = getFragmentManager();
-        fm.beginTransaction().replace(R.id.content_frame, new MainFragment()).commit();
+        Bundle extras = getIntent().getExtras();
+        String mesaj = "";
+        if (extras != null)
+            if (extras.getString("EtiketBildirim") != null) {
+                mesaj = extras.getString("EtiketBildirim");
+            }
+
+        if (mesaj.equals("Harita")) {
+            navigationView.setCheckedItem(R.id.nav_gallery);
+            idOnceki = R.id.nav_gallery;
+            FragmentManager fm = getFragmentManager();
+            fm.beginTransaction().replace(R.id.content_frame, new GmapFragment()).commit();
+        } else {
+            navigationView.setCheckedItem(R.id.nav_camara);
+            idOnceki = R.id.nav_camara;
+            FragmentManager fm = getFragmentManager();
+            fm.beginTransaction().replace(R.id.content_frame, new YakindakilerListFragment()).commit();
+        }
+
 
         sharedData = this.getSharedPreferences(filename, Context.MODE_PRIVATE);
         kulId = sharedData.getString("kulId", "bulunamadi");
@@ -70,14 +84,13 @@ public class MainActivity extends AppCompatActivity
                 .permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        View header=navigationView.getHeaderView(0);
-        TextView isim = (TextView)header.findViewById(R.id.txtIsim);
-        TextView email = (TextView)header.findViewById(R.id.textView);
+        View header = navigationView.getHeaderView(0);
+        TextView isim = (TextView) header.findViewById(R.id.txtIsim);
+        TextView email = (TextView) header.findViewById(R.id.textView);
         String[] cevap = kullaniciBilgi(kulId);
         isim.setText(cevap[0]);
         email.setText(cevap[1]);
     }
-
 
 
     @Override
@@ -107,7 +120,7 @@ public class MainActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             FragmentManager fm = getFragmentManager();
-            fm.beginTransaction().replace(R.id.content_frame,new AyarlarFragment()).commit();
+            fm.beginTransaction().replace(R.id.content_frame, new AyarlarFragment()).commit();
         }
         idOnceki = R.id.nav_share;
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -123,22 +136,22 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camara) {
-            if(idOnceki != id)
-            fm.beginTransaction().replace(R.id.content_frame, new ImportFragment()).commit();
+            if (idOnceki != id)
+                fm.beginTransaction().replace(R.id.content_frame, new YakindakilerListFragment()).commit();
         } else if (id == R.id.nav_gallery) {
-            if(idOnceki != id)
-            fm.beginTransaction().replace(R.id.content_frame, new GmapFragment()).commit();
+            if (idOnceki != id)
+                fm.beginTransaction().replace(R.id.content_frame, new GmapFragment()).commit();
         } else if (id == R.id.nav_slideshow) {
-            if(idOnceki != id)
-                fm.beginTransaction().replace(R.id.content_frame,new MekanlarListFragment()).commit();
+            if (idOnceki != id)
+                fm.beginTransaction().replace(R.id.content_frame, new MekanlarListFragment()).commit();
         } else if (id == R.id.nav_manage) {
-            if(idOnceki != id)
-            fm.beginTransaction().replace(R.id.content_frame,new CanliMapFragment()).commit();
+            if (idOnceki != id)
+                fm.beginTransaction().replace(R.id.content_frame, new CanliMapFragment()).commit();
         } else if (id == R.id.nav_share) {
-            if(idOnceki != id)
-            fm.beginTransaction().replace(R.id.content_frame,new AyarlarFragment()).commit();
+            if (idOnceki != id)
+                fm.beginTransaction().replace(R.id.content_frame, new AyarlarFragment()).commit();
         } else if (id == R.id.nav_send) {
-            if(idOnceki != id){
+            if (idOnceki != id) {
                 servisiKapat();
                 startActivity(new Intent(MainActivity.this, Giris.class));
             }
@@ -160,7 +173,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private String[] kullaniciBilgi(String kulId){
+    private String[] kullaniciBilgi(String kulId) {
         String METHOD_NAME = "kullaniciBilgi";// Method ad�
         String NAMESPACE = "http://controller";
         String SOAP_ACTION = "http://controller/kullaniciBilgi";

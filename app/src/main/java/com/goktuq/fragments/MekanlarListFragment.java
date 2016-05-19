@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.annotation.Nullable;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -106,7 +107,7 @@ public class MekanlarListFragment extends Fragment{
 
         LinearLayout layoutTimes = new LinearLayout(getActivity());
         layoutTimes.setOrientation(LinearLayout.HORIZONTAL);
-        final TimePicker pickerBaslangic = new TimePicker(getActivity());
+        final TimePicker pickerBaslangic = new TimePicker(new ContextThemeWrapper(getActivity(), android.R.style.Theme_Holo_Light_Dialog_NoActionBar));
         pickerBaslangic.setIs24HourView(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             pickerBaslangic.setHour(timeBas.getHours());
@@ -116,7 +117,7 @@ public class MekanlarListFragment extends Fragment{
             pickerBaslangic.setCurrentMinute(timeBas.getMinutes());
         }
         layoutTimes.addView(pickerBaslangic);
-        final TimePicker pickerBitis = new TimePicker(getActivity());
+        final TimePicker pickerBitis = new TimePicker(new ContextThemeWrapper(getActivity(), android.R.style.Theme_Holo_Light_Dialog_NoActionBar));
         pickerBitis.setIs24HourView(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             pickerBitis.setHour(timeBit.getHours());

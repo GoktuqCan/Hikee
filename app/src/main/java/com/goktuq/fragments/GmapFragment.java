@@ -1,5 +1,6 @@
 package com.goktuq.fragments;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -7,11 +8,13 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.annotation.Nullable;
-import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,6 +48,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.support.v4.content.PermissionChecker.checkSelfPermission;
+
 public class GmapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
 
@@ -58,6 +63,12 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     String kulId = "";
     long THREE_HOUR = 1000*60*60*3;
 
+    private static final int INITIAL_REQUEST=1337;
+    private static final int LOCATION_REQUEST=INITIAL_REQUEST+3;
+    private static final String[] LOCATION_PERMS={
+            Manifest.permission.ACCESS_FINE_LOCATION
+    };
+
     public static GmapFragment newInstance() {
         GmapFragment fragment = new GmapFragment();
         return fragment;
@@ -68,7 +79,14 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_gmaps, null, false);
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        if (canAccessLocation()) {
+        }
+        else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(LOCATION_PERMS, LOCATION_REQUEST);
+            }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             mapFragment = (MapFragment) this.getChildFragmentManager()
                     .findFragmentById(R.id.map_etiket);
         } else {
@@ -82,6 +100,14 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 .permitAll().build();
         StrictMode.setThreadPolicy(policy);
         return view;
+    }
+
+    private boolean canAccessLocation() {
+        return(hasPermission(Manifest.permission.ACCESS_FINE_LOCATION));
+    }
+
+    private boolean hasPermission(String perm) {
+        return(PackageManager.PERMISSION_GRANTED==checkSelfPermission(getActivity(),perm));
     }
 
 
@@ -159,27 +185,13 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         ScrollView scroll = new ScrollView(getActivity());
 
         final EditText titleBox = new EditText(getActivity());
-        titleBox.setHint("Etiket Adı");
+        titleBox.setHint("name");
         layout.addView(titleBox);
 
         LinearLayout layoutDates = new LinearLayout(getActivity());
         layoutDates.setOrientation(LinearLayout.HORIZONTAL);
-        final DatePicker datePickerBaslangic = new DatePicker(getActivity());
+        final DatePicker datePickerBaslangic = initDatePicker();
         datePickerBaslangic.setCalendarViewShown(false);
-        try {
-            Field f[] = datePickerBaslangic.getClass().getDeclaredFields();
-            for (Field field : f) {
-                if (field.getName().equals("mYearPicker")|| field.getName().equals("mYearSpinner")) {
-                    field.setAccessible(true);
-                    Object yearPicker = new Object();
-                    yearPicker = field.get(datePickerBaslangic);
-                    ((View) yearPicker).setVisibility(View.GONE);
-                }
-            }
-        }
-        catch (Exception e) {
-            Log.e("ERROR", e.getMessage());
-        }
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.DAY_OF_MONTH,timeBas.getDate());
         cal.set(Calendar.MONTH,timeBas.getMonth());
@@ -188,22 +200,8 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         datePickerBaslangic.setMaxDate(cal.getTimeInMillis()+(1000*60*60*24));
         datePickerBaslangic.updateDate(timeBas.getYear(),timeBas.getMonth(),timeBas.getDate());
         layoutDates.addView(datePickerBaslangic);
-        final DatePicker datePickerBitis = new DatePicker(getActivity());
+        final DatePicker datePickerBitis = initDatePicker();
         datePickerBitis.setCalendarViewShown(false);
-        try {
-            Field f[] = datePickerBitis.getClass().getDeclaredFields();
-            for (Field field : f) {
-                if (field.getName().equals("mYearPicker")|| field.getName().equals("mYearSpinner")) {
-                    field.setAccessible(true);
-                    Object yearPicker = new Object();
-                    yearPicker = field.get(datePickerBitis);
-                    ((View) yearPicker).setVisibility(View.GONE);
-                }
-            }
-        }
-        catch (Exception e) {
-            Log.e("ERROR", e.getMessage());
-        }
         cal = Calendar.getInstance();
         cal.set(Calendar.DAY_OF_MONTH,timeBit.getDate());
         cal.set(Calendar.MONTH,timeBit.getMonth());
@@ -216,7 +214,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
 
         LinearLayout layoutTimes = new LinearLayout(getActivity());
         layoutTimes.setOrientation(LinearLayout.HORIZONTAL);
-        final TimePicker pickerBaslangic = new TimePicker(getActivity());
+        final TimePicker pickerBaslangic = new TimePicker(new ContextThemeWrapper(getActivity(), android.R.style.Theme_Holo_Light_Dialog_NoActionBar));
         pickerBaslangic.setIs24HourView(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             pickerBaslangic.setHour(timeBas.getHours());
@@ -226,7 +224,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
             pickerBaslangic.setCurrentMinute(timeBas.getMinutes());
         }
         layoutTimes.addView(pickerBaslangic);
-        final TimePicker pickerBitis = new TimePicker(getActivity());
+        final TimePicker pickerBitis = new TimePicker(new ContextThemeWrapper(getActivity(), android.R.style.Theme_Holo_Light_Dialog_NoActionBar));
         pickerBitis.setIs24HourView(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             pickerBitis.setHour(timeBit.getHours());
@@ -239,7 +237,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         layout.addView(layoutTimes);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Etiketi Düzenle");
+        builder.setTitle("Düzenle");
         scroll.addView(layout);
         builder.setView(scroll);
 
@@ -265,7 +263,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
                 mekanKayit(kulId, titleBox.getText().toString(), arg0.getPosition().latitude + "", arg0.getPosition().longitude + "", timeBas.getTime()+"", timeBit.getTime()+"");
             }
         });
-        builder.setNegativeButton("Vazgeç", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 //do something
             }
@@ -278,6 +276,87 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback, Google
         AlertDialog alert = builder.create();
         alert.show();
         return false;
+    }
+
+    public DatePicker initDatePicker(){
+        DatePicker dp_mes = new DatePicker(new ContextThemeWrapper(getActivity(), android.R.style.Theme_Holo_Light_Dialog_NoActionBar));
+
+        int year    = dp_mes.getYear();
+        int month   = dp_mes.getMonth();
+        int day     = dp_mes.getDayOfMonth();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            int daySpinnerId = Resources.getSystem().getIdentifier("day", "id", "android");
+            if (daySpinnerId != 0)
+            {
+                View daySpinner = dp_mes.findViewById(daySpinnerId);
+                if (daySpinner != null)
+                {
+                    daySpinner.setVisibility(View.VISIBLE);
+                }
+            }
+
+            int monthSpinnerId = Resources.getSystem().getIdentifier("month", "id", "android");
+            if (monthSpinnerId != 0)
+            {
+                View monthSpinner = dp_mes.findViewById(monthSpinnerId);
+                if (monthSpinner != null)
+                {
+                    monthSpinner.setVisibility(View.VISIBLE);
+                }
+            }
+
+            int yearSpinnerId = Resources.getSystem().getIdentifier("year", "id", "android");
+            if (yearSpinnerId != 0)
+            {
+                View yearSpinner = dp_mes.findViewById(yearSpinnerId);
+                if (yearSpinner != null)
+                {
+                    yearSpinner.setVisibility(View.GONE);
+                }
+            }
+        } else { //Older SDK versions
+            Field f[] = dp_mes.getClass().getDeclaredFields();
+            for (Field field : f)
+            {
+                if(field.getName().equals("mDayPicker") || field.getName().equals("mDaySpinner"))
+                {
+                    field.setAccessible(true);
+                    Object dayPicker = null;
+                    try {
+                        dayPicker = field.get(dp_mes);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                    ((View) dayPicker).setVisibility(View.VISIBLE);
+                }
+
+                if(field.getName().equals("mMonthPicker") || field.getName().equals("mMonthSpinner"))
+                {
+                    field.setAccessible(true);
+                    Object monthPicker = null;
+                    try {
+                        monthPicker = field.get(dp_mes);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                    ((View) monthPicker).setVisibility(View.VISIBLE);
+                }
+
+                if(field.getName().equals("mYearPicker") || field.getName().equals("mYearSpinner"))
+                {
+                    field.setAccessible(true);
+                    Object yearPicker = null;
+                    try {
+                        yearPicker = field.get(dp_mes);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                    ((View) yearPicker).setVisibility(View.GONE);
+                }
+            }
+        }
+        return dp_mes;
     }
 
     public void mekanKayit(String kulID, String mekanAdi, String enlem,
