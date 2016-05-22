@@ -231,12 +231,12 @@ public class KonumServisi extends Service {
             sharedData = getSharedPreferences(filename, MODE_PRIVATE);
             kulId = sharedData.getString("kulId", "bulunamadi");
             String ID = sharedData.getString("kulId", "bulunamadi");
+            lokasyonGuncelle(ID, location1.getLatitude(),
+                    location1.getLongitude());
             if ((System.currentTimeMillis() - oncekiEtiketSure) >= TEN_MINUTES) {
                 gunlukEtiket();
                 oncekiEtiketSure = System.currentTimeMillis();
             }
-            lokasyonGuncelle(ID, location1.getLatitude(),
-                    location1.getLongitude());
             return null;
         }
 

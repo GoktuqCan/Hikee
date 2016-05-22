@@ -3,6 +3,8 @@ package com.goktuq.fragments;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,6 +26,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.ksoap2.SoapEnvelope;
+import org.ksoap2.serialization.KvmSerializable;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
@@ -38,6 +41,9 @@ import java.util.TimerTask;
  */
 public class CanliMapFragment extends Fragment implements OnMapReadyCallback{
 
+    String kulId = "";
+    static String filename = "OtoFile";
+    SharedPreferences sharedData;
     Timer timer;
     Handler handler;
     GoogleMap googleHarita;
@@ -49,6 +55,8 @@ public class CanliMapFragment extends Fragment implements OnMapReadyCallback{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_canlimap, null, false);
+        sharedData = this.getActivity().getSharedPreferences(filename, Context.MODE_PRIVATE);
+        kulId = sharedData.getString("kulId", "bulunamadi");
         MapFragment mapFragment;
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             mapFragment = (MapFragment) this.getChildFragmentManager()
@@ -84,11 +92,11 @@ public class CanliMapFragment extends Fragment implements OnMapReadyCallback{
                 for (String ss : getForMarkers()) {
                     String[] ayri = ss.split("lok");
                     Marker marker;
-                    if (ayri[3].equals("True")) {
+                    if (ayri[2].equals("true")) {
                         marker = googleHarita.addMarker(new MarkerOptions()
                                 .position(
-                                        new LatLng(Double.parseDouble(ayri[1]),
-                                                Double.parseDouble(ayri[2])))
+                                        new LatLng(Double.parseDouble(ayri[3]),
+                                                Double.parseDouble(ayri[4])))
                                 .title(ayri[0])
                                 .anchor(.5f, .5f)
                                 .snippet("")
@@ -97,8 +105,8 @@ public class CanliMapFragment extends Fragment implements OnMapReadyCallback{
                     } else {
                         marker = googleHarita.addMarker(new MarkerOptions()
                                 .position(
-                                        new LatLng(Double.parseDouble(ayri[1]),
-                                                Double.parseDouble(ayri[2])))
+                                        new LatLng(Double.parseDouble(ayri[3]),
+                                                Double.parseDouble(ayri[4])))
                                 .title(ayri[0])
                                 .anchor(.5f, .5f)
                                 .snippet("")
@@ -130,15 +138,16 @@ public class CanliMapFragment extends Fragment implements OnMapReadyCallback{
     }
 
     public ArrayList<String> getForMarkers() {
-        String METHOD_NAME = "getForMarkers";// Method ad�
-        String NAMESPACE = "http://tempuri.org/";
-        String SOAP_ACTION = "http://tempuri.org/getForMarkers";
-        String URL = "http://www.goktugcancakmak.com/WebService.asmx?WSDL";
+        String METHOD_NAME = "getYakindakiler";// Method ad�
+        String NAMESPACE = "http://controller";
+        String SOAP_ACTION = "http://controller/getYakindakiler";
+        String URL = "http://otostopaws.iv8wvcggmq.eu-central-1.elasticbeanstalk.com/services/DemoDagitik?wsdl";
         // SOAP must be the same version as the webservice.
         int SOAP_VERSION = SoapEnvelope.VER11;
         List<String> acc = new ArrayList<String>();
         try {
             SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
+            request.addProperty("kulID", kulId);
             SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
                     SOAP_VERSION);
             envelope.dotNet = true;
@@ -146,17 +155,10 @@ public class CanliMapFragment extends Fragment implements OnMapReadyCallback{
             HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
             androidHttpTransport.debug = true;
             androidHttpTransport.call(SOAP_ACTION, envelope);
-
-            SoapObject obj1 = (SoapObject) envelope.bodyIn;
-
-            SoapObject obj2 = (SoapObject) obj1.getProperty(0);
-
-            for (int i = 0; i < obj2.getPropertyCount(); i++) {
-                String id1 = obj2.getProperty(i).toString();
-
-                if (id1 != "") {
-                    acc.add(id1);
-                }
+            KvmSerializable ks = (KvmSerializable) envelope.bodyIn;
+            for (int i = 0; i < ks.getPropertyCount(); i++) {
+                if (ks.getProperty(i) != null)
+                    acc.add(ks.getProperty(i).toString());//Dizi elemanı
             }
             return (ArrayList<String>) acc;
         } catch (Exception e) {

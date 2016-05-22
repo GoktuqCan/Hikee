@@ -1,8 +1,11 @@
 package com.goktuq;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.view.View;
@@ -21,6 +24,12 @@ import org.ksoap2.transport.HttpTransportSE;
  * Created by Casper on 24.04.2016.
  */
 public class Giris extends Activity {
+
+    private static final String[] INITIAL_PERMS={
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    };
+    private static final int INITIAL_REQUEST=1337;
 
     static String filename = "OtoFile";
     SharedPreferences sharedData;
@@ -43,6 +52,22 @@ public class Giris extends Activity {
             ogrNo.setText(donenogrNo);
             sifre.setText(donenSifre);
         }
+        if (!canAccessLocation()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(INITIAL_PERMS, INITIAL_REQUEST);
+            }
+        }
+    }
+
+    private boolean canAccessLocation() {
+        return(hasPermission(Manifest.permission.ACCESS_FINE_LOCATION));
+    }
+
+    private boolean hasPermission(String perm) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return(PackageManager.PERMISSION_GRANTED==checkSelfPermission(perm));
+        }
+        return true;
     }
 
     public void kayitSayfasi(View v) {
@@ -75,9 +100,9 @@ public class Giris extends Activity {
 
     public String idGetir(String ogrNo) {
         String METHOD_NAME = "findIdByOgrNo";// Method ad�
-        String NAMESPACE = "http://tempuri.org/";
-        String SOAP_ACTION = "http://tempuri.org/findIdByOgrNo";
-        String URL = "http://www.goktugcancakmak.com/WebService.asmx?wsdl";
+        String NAMESPACE = "http://controller";
+        String SOAP_ACTION = "http://controller/findIdByOgrNo";
+        String URL = "http://otostopaws.iv8wvcggmq.eu-central-1.elasticbeanstalk.com/services/DemoDagitik?wsd";
         // SOAP must be the same version as the webservice.
         int SOAP_VERSION = SoapEnvelope.VER11;
         try {
